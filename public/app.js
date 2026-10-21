@@ -81,6 +81,7 @@
     apiKeyInput: document.getElementById('apiKeyInput'),
     modelSelect: document.getElementById('modelSelect'),
     riskSelect: document.getElementById('riskSelect'),
+    settlementSelect: document.getElementById('settlementSelect'),
     intervalInput: document.getElementById('intervalInput'),
     autoTradeSwitch: document.getElementById('autoTradeSwitch'),
     telegramTokenInput: document.getElementById('telegramTokenInput'),
@@ -606,19 +607,28 @@
 
     el.holdingsTableBody.innerHTML = holdings.map(h => {
       const pnlCls = h.pnl >= 0 ? 'text-emerald-400 font-semibold' : 'text-rose-400 font-semibold';
+      const avail = h.availableQuantity || 0;
+      const pend = h.pendingQuantity || 0;
+      const canSell = avail > 0;
       return `
         <tr>
           <td class="font-bold text-glow-cyan">${h.symbol}</td>
           <td class="font-mono font-semibold">${h.quantity} CP</td>
-          <td class="font-mono text-emerald-400 font-bold">${h.availableQuantity || 0} CP</td>
-          <td class="font-mono text-amber-400 text-xs">${h.pendingQuantity || 0} CP (T+2.5)</td>
+          <td class="font-mono ${canSell ? 'text-emerald-400 font-bold' : 'text-slate-500'}">${avail} CP</td>
+          <td class="font-mono text-amber-400 text-xs">${pend > 0 ? pend + ' CP (Chờ T+2.5)' : '-'}</td>
           <td class="font-mono text-slate-400">${fmtVND(h.avgPrice)}</td>
           <td class="font-mono font-semibold">${fmtVND(h.currentPrice)}</td>
           <td class="${pnlCls} font-mono">${fmtSign(h.pnl)} (${fmtPct(h.pnlPercent)})</td>
           <td>
-            <button class="cyber-btn cyber-btn-danger text-xs py-0.5 px-2" onclick="window.quickSell('${h.symbol}', ${h.availableQuantity > 0 ? h.availableQuantity : h.quantity})">
-              ${h.availableQuantity > 0 ? 'BÁN NGAY' : 'BÁN KHẨN'}
-            </button>
+            ${canSell ? `
+              <button class="cyber-btn cyber-btn-danger text-xs py-0.5 px-2" onclick="window.quickSell('${h.symbol}', ${avail})">
+                BÁN (${avail} CP)
+              </button>
+            ` : `
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/60 text-amber-400 border border-amber-500/30 cursor-not-allowed" title="Cổ phiếu đang chờ thanh toán T+2.5 từ VSD">
+                ⏳ CHỜ VỀ T+2.5
+              </span>
+            `}
           </td>
         </tr>
       `;
@@ -1472,6 +1482,9 @@
       el.riskSelect.value = cfg.riskTolerance || 'BALANCED';
       el.intervalInput.value = cfg.scanIntervalSeconds || 120;
       el.autoTradeSwitch.checked = cfg.autoTradeEnabled !== false;
+      if (el.settlementSelect) {
+        el.settlementSelect.value = cfg.settlementMode || 'T2_5_STRICT';
+      }
 
       if (el.telegramTokenInput) {
         el.telegramTokenInput.placeholder = cfg.hasTelegram ? `Đã cấu hình (${cfg.telegramBotTokenMasked})` : 'Nhập bot token từ @BotFather...';
@@ -1525,6 +1538,9 @@
         scanIntervalSeconds: parseInt(el.intervalInput.value, 10),
         autoTradeEnabled: el.autoTradeSwitch.checked
       };
+      if (el.settlementSelect) {
+        body.settlementMode = el.settlementSelect.value;
+      }
       if (el.apiKeyInput.value.trim()) {
         body.geminiApiKey = el.apiKeyInput.value.trim();
       }

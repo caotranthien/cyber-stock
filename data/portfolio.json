@@ -1,13 +1,13 @@
 {
   "initialCapital": 10000000,
-  "cash": 3856,
-  "totalNav": 9993656,
+  "cash": 51237,
+  "totalNav": 9995387,
   "startOfDayNav": 10000000,
-  "unrealizedPnL": 29197,
-  "unrealizedPnLPercent": 0.29,
-  "realizedPnL": -12534,
-  "dailyPnL": -6344,
-  "dailyPnLPercent": -0.06,
+  "unrealizedPnL": 31147,
+  "unrealizedPnLPercent": 0.31,
+  "realizedPnL": -12753,
+  "dailyPnL": -4613,
+  "dailyPnLPercent": -0.05,
   "lastDate": "2026-10-21",
   "holdings": {
     "FPT": {
@@ -17,11 +17,11 @@
       "pendingQuantity": 0,
       "avgPrice": 57900,
       "highestPrice": 58200,
-      "currentPrice": 57900,
+      "currentPrice": 57800,
       "costValue": 2895000,
-      "marketValue": 2895000,
-      "pnl": 0,
-      "pnlPercent": 0,
+      "marketValue": 2890000,
+      "pnl": -5000,
+      "pnlPercent": -0.17,
       "entryTime": "2026-10-21T03:02:07.381Z",
       "lots": [
         {
@@ -38,12 +38,12 @@
       "availableQuantity": 10,
       "pendingQuantity": 0,
       "avgPrice": 210400,
-      "highestPrice": 214000,
-      "currentPrice": 213600,
+      "highestPrice": 216100,
+      "currentPrice": 215000,
       "costValue": 2104000,
-      "marketValue": 2136000,
-      "pnl": 32000,
-      "pnlPercent": 1.52,
+      "marketValue": 2150000,
+      "pnl": 46000,
+      "pnlPercent": 2.19,
       "entryTime": "2026-10-21T03:02:07.388Z",
       "lots": [
         {
@@ -61,11 +61,11 @@
       "pendingQuantity": 0,
       "avgPrice": 20400,
       "highestPrice": 20450,
-      "currentPrice": 20400,
+      "currentPrice": 20350,
       "costValue": 142800,
-      "marketValue": 142800,
-      "pnl": 0,
-      "pnlPercent": 0,
+      "marketValue": 142450,
+      "pnl": -350,
+      "pnlPercent": -0.25,
       "entryTime": "2026-10-21T03:02:07.393Z",
       "lots": [
         {
@@ -79,15 +79,15 @@
     "TCB": {
       "symbol": "TCB",
       "quantity": 102,
-      "availableQuantity": 101,
-      "pendingQuantity": 1,
+      "availableQuantity": 102,
+      "pendingQuantity": 0,
       "avgPrice": 34200,
       "highestPrice": 34200,
-      "currentPrice": 34200,
+      "currentPrice": 34150,
       "costValue": 3488400,
-      "marketValue": 3488400,
-      "pnl": 0,
-      "pnlPercent": 0,
+      "marketValue": 3483300,
+      "pnl": -5100,
+      "pnlPercent": -0.15,
       "entryTime": "2026-10-21T03:08:28.602Z",
       "lots": [
         {
@@ -113,15 +113,15 @@
     "MWG": {
       "symbol": "MWG",
       "quantity": 17,
-      "availableQuantity": 10,
-      "pendingQuantity": 7,
+      "availableQuantity": 17,
+      "pendingQuantity": 0,
       "avgPrice": 75459,
       "highestPrice": 75600,
-      "currentPrice": 75300,
+      "currentPrice": 75200,
       "costValue": 1282803,
-      "marketValue": 1280100,
-      "pnl": -2703,
-      "pnlPercent": -0.21,
+      "marketValue": 1278400,
+      "pnl": -4403,
+      "pnlPercent": -0.34,
       "entryTime": "2026-10-21T03:08:28.603Z",
       "lots": [
         {
@@ -137,31 +137,24 @@
           "price": 75400
         }
       ]
-    },
-    "VPB": {
-      "symbol": "VPB",
-      "quantity": 2,
-      "availableQuantity": 0,
-      "pendingQuantity": 2,
-      "avgPrice": 23800,
-      "highestPrice": 23800,
-      "currentPrice": 23750,
-      "costValue": 47600,
-      "marketValue": 47500,
-      "pnl": -100,
-      "pnlPercent": -0.21,
-      "entryTime": "2026-10-21T03:27:44.877Z",
-      "lots": [
-        {
-          "date": "2026-10-21",
-          "timestamp": 1792553264877,
-          "quantity": 2,
-          "price": 23800
-        }
-      ]
     }
   },
   "trades": [
+    {
+      "id": "TRD_MVHJZH1K",
+      "timestamp": "2026-10-21T03:29:15.272Z",
+      "timeFormatted": "10:29:15",
+      "symbol": "VPB",
+      "side": "SELL",
+      "quantity": 2,
+      "price": 23750,
+      "orderValue": 47500,
+      "fee": 71,
+      "tax": 48,
+      "netProceeds": 47381,
+      "pnl": -219,
+      "aiReason": "[AI GEMINI: 65%] Cổ phiếu có tín hiệu điều chỉnh ngắn hạn, bán chốt lời bảo toàn danh mục."
+    },
     {
       "id": "TRD_MVHJXJAL",
       "timestamp": "2026-10-21T03:27:44.877Z",
@@ -379,10 +372,10 @@
   "dailySnapshots": [
     {
       "date": "2026-10-21",
-      "nav": 9993656,
-      "cash": 3856,
-      "pnl": -6344,
-      "changePercent": -0.06
+      "nav": 9995387,
+      "cash": 51237,
+      "pnl": -4613,
+      "changePercent": -0.05
     }
   ]
 }

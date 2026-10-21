@@ -6,6 +6,7 @@ const telegramBot = require('./telegramBot');
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
 const PORTFOLIO_FILE = path.join(DATA_DIR, 'portfolio.json');
+const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 
 const INITIAL_CAPITAL = 10000000; // 10,000,000 VND
 const BROKER_FEE_RATE = 0.0015;   // 0.15%
@@ -18,6 +19,35 @@ class TradingEngine {
   constructor() {
     this.ensureDataDir();
     this.portfolio = this.loadPortfolio();
+  }
+
+  getConfig() {
+    try {
+      if (fs.existsSync(CONFIG_FILE)) {
+        return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+      }
+    } catch (e) {}
+    return { settlementMode: 'T2_5_STRICT' };
+  }
+
+  // Count business trading days between two dates (excluding Saturday & Sunday)
+  getTradingDaysDiff(date1Str, date2Str) {
+    if (!date1Str || !date2Str || date1Str === date2Str) return 0;
+    const d1 = new Date(date1Str);
+    const d2 = new Date(date2Str);
+    if (d1 >= d2) return 0;
+
+    let count = 0;
+    const cur = new Date(d1);
+    cur.setDate(cur.getDate() + 1);
+    while (cur <= d2) {
+      const day = cur.getDay();
+      if (day !== 0 && day !== 6) { // Monday to Friday
+        count++;
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
   }
 
   ensureDataDir() {
@@ -122,20 +152,48 @@ class TradingEngine {
       holding.pnl = holding.marketValue - holding.costValue;
       holding.pnlPercent = holding.costValue > 0 ? Math.round((holding.pnl / holding.costValue) * 10000) / 100 : 0;
 
-      // Settle T+2.5 lots (settles after 180s in simulation or on next calendar day)
+      // Settle T+2.5 lots according to settlementMode:
+      // - T2_5_STRICT: Chuẩn VSD Việt Nam (phải qua >= 2 ngày làm việc và sau 13:00 ngày T+2)
+      // - T2_5_SIMULATED: Mô phỏng rút gọn (chờ 180 giây để kiểm thử nhanh)
+      // - T0_DAYTRADING: Day trading T+0 (khả dụng tức thì)
+      const config = this.getConfig();
+      const mode = config.settlementMode || 'T2_5_STRICT';
       const now = Date.now();
+      const currentHour = new Date().getHours();
+      const today = this.getTodayString();
+
       let availQty = 0;
       let pendQty = 0;
-      if (Array.isArray(holding.lots)) {
-        for (const lot of holding.lots) {
-          if ((now - lot.timestamp >= 180000) || (lot.date !== this.getTodayString())) {
-            availQty += lot.quantity;
-          } else {
-            pendQty += lot.quantity;
+
+      if (mode === 'T0_DAYTRADING') {
+        availQty = holding.quantity;
+        pendQty = 0;
+      } else if (mode === 'T2_5_SIMULATED') {
+        if (Array.isArray(holding.lots)) {
+          for (const lot of holding.lots) {
+            if ((now - lot.timestamp >= 180000) || (lot.date !== today)) {
+              availQty += lot.quantity;
+            } else {
+              pendQty += lot.quantity;
+            }
           }
+        } else {
+          availQty = holding.quantity;
         }
       } else {
-        availQty = holding.quantity;
+        // T2_5_STRICT (Chuẩn VSD Việt Nam)
+        if (Array.isArray(holding.lots)) {
+          for (const lot of holding.lots) {
+            const diffDays = this.getTradingDaysDiff(lot.date, today);
+            if (diffDays > 2 || (diffDays === 2 && currentHour >= 13)) {
+              availQty += lot.quantity;
+            } else {
+              pendQty += lot.quantity;
+            }
+          }
+        } else {
+          availQty = holding.quantity;
+        }
       }
       holding.availableQuantity = availQty;
       holding.pendingQuantity = pendQty;
@@ -275,8 +333,24 @@ class TradingEngine {
       return { success: false, message: `Không sở hữu mã ${symbol} để bán` };
     }
 
-    const sellQty = Math.min(holding.quantity, requestedShares);
-    if (sellQty <= 0) return { success: false, message: 'Số lượng không hợp lệ' };
+    const config = this.getConfig();
+    const mode = config.settlementMode || 'T2_5_STRICT';
+
+    let maxSellable = holding.quantity;
+    if (mode === 'T2_5_STRICT' || mode === 'T2_5_SIMULATED') {
+      maxSellable = holding.availableQuantity !== undefined ? holding.availableQuantity : 0;
+      if (maxSellable <= 0) {
+        const pending = holding.pendingQuantity || holding.quantity;
+        const msg = `[CHẶN BÁN T+2.5] ${symbol}: Toàn bộ ${pending} CP đang chờ bù trừ thanh toán VSD (T+2.5), chưa thể bán!`;
+        logger.warn('SETTLEMENT', msg);
+        return { success: false, message: msg };
+      }
+    }
+
+    const sellQty = Math.min(maxSellable, requestedShares);
+    if (sellQty <= 0) {
+      return { success: false, message: `Số lượng khả dụng không đủ để bán (${maxSellable} CP khả dụng)` };
+    }
 
     const orderValue = sellQty * price;
     const fee = Math.round(orderValue * BROKER_FEE_RATE);
@@ -290,6 +364,26 @@ class TradingEngine {
     this.portfolio.realizedPnL = (this.portfolio.realizedPnL || 0) + tradePnL;
 
     holding.quantity -= sellQty;
+    if (holding.availableQuantity !== undefined) {
+      holding.availableQuantity = Math.max(0, holding.availableQuantity - sellQty);
+    }
+
+    // Deduct sold shares from oldest lots (FIFO)
+    if (Array.isArray(holding.lots)) {
+      let remainingDeduct = sellQty;
+      for (let i = 0; i < holding.lots.length && remainingDeduct > 0; i++) {
+        const lot = holding.lots[i];
+        if (lot.quantity <= remainingDeduct) {
+          remainingDeduct -= lot.quantity;
+          lot.quantity = 0;
+        } else {
+          lot.quantity -= remainingDeduct;
+          remainingDeduct = 0;
+        }
+      }
+      holding.lots = holding.lots.filter(l => l.quantity > 0);
+    }
+
     if (holding.quantity <= 0) {
       delete this.portfolio.holdings[symbol];
     } else {
@@ -325,6 +419,10 @@ class TradingEngine {
 
   // Risk Auto-Guardian: Stop-loss at -7% and Take-Profit at +15%
   checkRiskRules(marketQuotes) {
+    const config = this.getConfig();
+    const mode = config.settlementMode || 'T2_5_STRICT';
+    const isStrict = mode !== 'T0_DAYTRADING';
+
     const quoteMap = new Map();
     for (const q of marketQuotes) quoteMap.set(q.symbol, q.price);
 
@@ -336,26 +434,41 @@ class TradingEngine {
       const peakPrice = holding.highestPrice || holding.avgPrice;
       const dropFromPeak = peakPrice > curPrice ? ((peakPrice - curPrice) / peakPrice) * 100 : 0;
 
+      const sellableQty = isStrict ? (holding.availableQuantity || 0) : holding.quantity;
+
       // 1. Hard Floor Stop-loss (-7%)
       if (pnlPct <= STOP_LOSS_PERCENT) {
+        if (sellableQty <= 0) {
+          logger.alert('RISK', `[CẢNH BÁO T+2.5] ${symbol} chạm sàn cắt lỗ ${pnlPct.toFixed(2)}% (chạm sàn ${STOP_LOSS_PERCENT}%), nhưng toàn bộ ${holding.quantity} CP đang chờ về từ VSD. Bị kẹp hàng T+2.5, chưa thể bán!`);
+          continue;
+        }
         const reason = `[BẢO TOÀN VỐN GỐC] Cắt lỗ kỷ luật -${Math.abs(pnlPct).toFixed(2)}%`;
-        logger.alert('RISK', `[KÍCH HOẠT CẮT LỖ KHẨN CẤP] ${symbol} giảm ${pnlPct.toFixed(2)}% (chạm sàn ${STOP_LOSS_PERCENT}%). Tự động bán để bảo toàn vốn 10M!`);
-        this.executeSell(symbol, curPrice, holding.quantity, reason);
+        logger.alert('RISK', `[KÍCH HOẠT CẮT LỖ KHẨN CẤP] ${symbol} giảm ${pnlPct.toFixed(2)}% (chạm sàn ${STOP_LOSS_PERCENT}%). Tự động bán ${sellableQty} CP để bảo toàn vốn 10M!`);
+        this.executeSell(symbol, curPrice, sellableQty, reason);
         telegramBot.sendRiskAlert('STOP_LOSS', symbol, pnlPct, curPrice, reason).catch(() => {});
       }
       // 2. Trailing Stop Loss: Nếu đã có lãi trên +3% nhưng bị tụt dốc > 3.5% từ đỉnh
       else if (pnlPct >= 3.0 && dropFromPeak >= 3.5 && holding.quantity >= 10) {
+        if (sellableQty <= 0) {
+          logger.alert('RISK', `[CẢNH BÁO T+2.5] ${symbol} đạt đỉnh ${peakPrice.toLocaleString('vi-VN')} đ nhưng đã tụt -${dropFromPeak.toFixed(1)}% từ đỉnh, tuy nhiên cổ phiếu đang chờ về (T+2.5). Chưa thể bán trailing stop!`);
+          continue;
+        }
         const reason = `[TRAILING STOP] Khóa lợi nhuận sau khi quay đầu giảm ${dropFromPeak.toFixed(1)}% từ đỉnh`;
-        logger.alert('RISK', `[TRAILING STOP-LOSS] ${symbol} đạt đỉnh ${peakPrice.toLocaleString('vi-VN')} đ nhưng đã tụt -${dropFromPeak.toFixed(1)}% từ đỉnh. Kích hoạt chốt lãi bảo vệ thành quả!`);
-        this.executeSell(symbol, curPrice, holding.quantity, reason);
+        logger.alert('RISK', `[TRAILING STOP-LOSS] ${symbol} đạt đỉnh ${peakPrice.toLocaleString('vi-VN')} đ nhưng đã tụt -${dropFromPeak.toFixed(1)}% từ đỉnh. Kích hoạt chốt lãi ${sellableQty} CP bảo vệ thành quả!`);
+        this.executeSell(symbol, curPrice, sellableQty, reason);
         telegramBot.sendRiskAlert('TRAILING_STOP', symbol, pnlPct, curPrice, reason).catch(() => {});
       }
       // 3. Take-profit (+15%)
       else if (pnlPct >= TAKE_PROFIT_PERCENT) {
+        if (sellableQty <= 0) {
+          logger.alert('RISK', `[CẢNH BÁO T+2.5] ${symbol} đạt mục tiêu chốt lời +${pnlPct.toFixed(2)}% nhưng cổ phiếu đang chờ về (T+2.5). Chưa thể bán!`);
+          continue;
+        }
+        const halfQty = Math.max(10, Math.floor(sellableQty / 20) * 10);
+        const actualSell = Math.min(sellableQty, halfQty);
         const reason = `[CHỐT LỜI MỤC TIÊU] Hiện thực hóa lợi nhuận +${pnlPct.toFixed(2)}%`;
-        logger.alert('RISK', `[KÍCH HOẠT CHỐT LỜI TỰ ĐỘNG] ${symbol} tăng ${pnlPct.toFixed(2)}% (vượt mục tiêu ${TAKE_PROFIT_PERCENT}%). Tự động chốt lời 50% số lượng!`);
-        const halfQty = Math.max(10, Math.floor(holding.quantity / 20) * 10);
-        this.executeSell(symbol, curPrice, halfQty, reason);
+        logger.alert('RISK', `[KÍCH HOẠT CHỐT LỜI TỰ ĐỘNG] ${symbol} tăng ${pnlPct.toFixed(2)}% (vượt mục tiêu ${TAKE_PROFIT_PERCENT}%). Tự động chốt lời ${actualSell} CP!`);
+        this.executeSell(symbol, curPrice, actualSell, reason);
         telegramBot.sendRiskAlert('TAKE_PROFIT', symbol, pnlPct, curPrice, reason).catch(() => {});
       }
     }

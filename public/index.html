@@ -492,6 +492,16 @@
         </div>
 
         <div>
+          <label class="block text-slate-300 font-semibold mb-1">CHẾ ĐỘ THANH TOÁN (SETTLEMENT CYCLE)</label>
+          <select id="settlementSelect" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
+            <option value="T2_5_STRICT" selected>Chuẩn T+2.5 Việt Nam (Chờ 2.5 ngày hàng về mới được bán - Chuẩn VSD)</option>
+            <option value="T2_5_SIMULATED">Mô phỏng T+2.5 Rút Gọn (Chờ 3 phút hàng về để kiểm thử bot)</option>
+            <option value="T0_DAYTRADING">T+0 Day Trading (Bán ngay tức thì sau khi mua - Chế độ thử nghiệm)</option>
+          </select>
+          <span class="text-[10px] text-slate-500 mt-1 block">Theo luật VSD Việt Nam, cổ phiếu mua ngày T phải tới chiều ngày T+2 mới về tài khoản để bán.</span>
+        </div>
+
+        <div>
           <label class="block text-slate-300 font-semibold mb-1">TẦN SUẤT QUÉT THỊ TRƯỜNG TỰ HÀNH (GIÂY)</label>
           <input id="intervalInput" type="number" min="30" max="600" value="120" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
         </div>

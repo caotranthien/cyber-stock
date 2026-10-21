@@ -109,8 +109,16 @@ class BotScheduler {
             // Autonomous SELL
             else if (rec.action === 'SELL' && portfolioSummary.holdings[sym]) {
               const holding = portfolioSummary.holdings[sym];
-              const sellShares = rec.shares > 0 ? rec.shares : holding.quantity;
-              tradingEngine.executeSell(sym, quote.price, sellShares, `[AI GEMINI: ${rec.confidence}%] ${rec.reason}`);
+              const mode = config.settlementMode || 'T2_5_STRICT';
+              const isStrict = mode !== 'T0_DAYTRADING';
+              const sellable = isStrict ? (holding.availableQuantity || 0) : holding.quantity;
+
+              if (sellable > 0) {
+                const sellShares = (rec.shares > 0 && rec.shares <= sellable) ? rec.shares : sellable;
+                tradingEngine.executeSell(sym, quote.price, sellShares, `[AI GEMINI: ${rec.confidence}%] ${rec.reason}`);
+              } else {
+                logger.warn('SCHEDULER', `[BỎ QUA LỆNH BÁN AI] ${sym}: AI khuyến nghị BÁN (${rec.confidence}%) nhưng toàn bộ ${holding.quantity} CP đang chờ về (T+2.5). Không thể bán!`);
+              }
             }
           }
         }

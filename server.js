@@ -121,12 +121,13 @@ app.post('/api/bot/toggle', (req, res) => {
 app.post('/api/bot/config', (req, res) => {
   const { 
     geminiApiKey, riskTolerance, scanIntervalSeconds, autoTradeEnabled,
-    telegramBotToken, telegramChatId, telegramAlertsEnabled 
+    telegramBotToken, telegramChatId, telegramAlertsEnabled, settlementMode 
   } = req.body;
   const updates = {};
   if (geminiApiKey !== undefined) updates.geminiApiKey = geminiApiKey.trim();
   if (riskTolerance !== undefined) updates.riskTolerance = riskTolerance;
   if (autoTradeEnabled !== undefined) updates.autoTradeEnabled = !!autoTradeEnabled;
+  if (settlementMode !== undefined) updates.settlementMode = settlementMode;
   if (telegramBotToken !== undefined) updates.telegramBotToken = telegramBotToken.trim();
   if (telegramChatId !== undefined) updates.telegramChatId = telegramChatId.trim();
   if (telegramAlertsEnabled !== undefined) updates.telegramAlertsEnabled = !!telegramAlertsEnabled;
