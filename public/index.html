@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CYBER_QUANT_VN // GEMINI AI AUTONOMOUS TRADER</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <!-- Cyberpunk Style -->
+  <link rel="stylesheet" href="/style.css">
+  <!-- TradingView Lightweight Charts CDN -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body class="bg-[#050811] text-slate-100 font-mono antialiased selection:bg-emerald-500 selection:text-black">
+
+  <!-- Background Matrix Digital Rain -->
+  <canvas id="matrixCanvas"></canvas>
+
+  <!-- CRT Scanlines Overlay -->
+  <div class="scanlines"></div>
+
+  <!-- Main Container -->
+  <div class="cyber-container">
+
+    <!-- TOP CYBER NAVIGATION BAR -->
+    <header class="cyber-card p-3 mb-4 flex flex-wrap items-center justify-between gap-3 border-emerald-500/40">
+      <div class="cyber-corner cyber-corner-tl"></div>
+      <div class="cyber-corner cyber-corner-tr"></div>
+      <div class="cyber-corner cyber-corner-bl"></div>
+      <div class="cyber-corner cyber-corner-br"></div>
+
+      <!-- Brand & Status -->
+      <div class="flex items-center gap-3">
+        <div class="w-3 h-3 rounded-full bg-emerald-400 shadow-[0_0_10px_#00ff66] animate-ping"></div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-widest text-glow-green">CYBER_QUANT_VN</h1>
+            <span class="text-xs text-cyan-400 font-bold px-1.5 py-0.5 rounded border border-cyan-500/50 bg-cyan-950/40">GEMINI_NEURAL_v2.5</span>
+          </div>
+          <div class="text-[10px] text-slate-400 flex items-center gap-2 mt-0.5">
+            <span>HỆ THỐNG GIAO DỊCH CHỨNG KHOÁN TỰ ĐỘNG 24/7</span>
+            <span>•</span>
+            <span id="marketSessionBadge" class="tag-badge badge-trade">ĐANG TẢI...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Clock & Uptime -->
+      <div class="hidden md:flex items-center gap-4 text-xs">
+        <div class="text-right">
+          <div class="text-slate-400 text-[10px] uppercase">GIỜ THỊ TRƯỜNG</div>
+          <div id="marketClock" class="font-bold text-glow-cyan">00:00:00 ICT</div>
+        </div>
+        <div class="h-6 w-[1px] bg-slate-800"></div>
+        <div>
+          <div class="text-slate-400 text-[10px] uppercase">TRẠNG THÁI BOT</div>
+          <div id="botStatusPill" class="font-bold flex items-center gap-1.5 text-glow-green">
+            <span class="pulse-dot pulse-dot-green"></span> TỰ HÀNH: BẬT
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Controls -->
+      <div class="flex items-center flex-wrap gap-2">
+        <button id="forceScanBtn" class="cyber-btn text-xs">
+          ⚡ QUÉT AI NGAY
+        </button>
+        <button id="toggleBotBtn" class="cyber-btn cyber-btn-danger text-xs">
+          TẠM DỪNG BOT
+        </button>
+        <button id="sfxBtn" class="cyber-btn cyber-btn-cyan text-xs">
+          SFX: BẬT
+        </button>
+        <button id="scanlinesBtn" class="cyber-btn cyber-btn-cyan text-xs">
+          CRT: BẬT
+        </button>
+        <button id="backtestBtn" class="cyber-btn cyber-btn-cyan text-xs">
+          📊 BACKTEST
+        </button>
+        <button id="settingsBtn" class="cyber-btn cyber-btn-cyan text-xs">
+          ⚙ CẤU HÌNH
+        </button>
+        <button id="resetPortfolioBtn" class="cyber-btn cyber-btn-danger text-xs" title="Reset về vốn ban đầu 10.000.000 đ">
+          ↺ RESET 10M
+        </button>
+      </div>
+    </header>
+
+    <!-- METRIC CARDS HUD (CAPITAL & DAILY PNL) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      
+      <!-- Card 1: Total NAV -->
+      <div class="cyber-card p-3.5 border-emerald-500/30">
+        <div class="text-slate-400 text-[11px] font-semibold tracking-wider flex items-center justify-between mb-1">
+          <span>TỔNG TÀI SẢN (NAV)</span>
+          <span class="tag-badge badge-trade">VỐN GỐC: 10M</span>
+        </div>
+        <div id="navValue" class="text-2xl font-black text-glow-green tracking-tight">
+          10,000,000 đ
+        </div>
+        <div id="navChange" class="text-xs text-glow-green mt-1">
+          +0 đ (+0.00% so với vốn 10M)
+        </div>
+      </div>
+
+      <!-- Card 2: Cash Balance -->
+      <div class="cyber-card p-3.5 border-cyan-500/30">
+        <div class="text-slate-400 text-[11px] font-semibold tracking-wider flex items-center justify-between mb-1">
+          <span>TIỀN MẶT KHẢ DỤNG</span>
+          <span class="text-cyan-400 text-xs">SẴN SÀNG GIẢI NGÂN</span>
+        </div>
+        <div id="cashValue" class="text-2xl font-black text-glow-cyan tracking-tight">
+          10,000,000 đ
+        </div>
+        <!-- Progress bar of Cash vs Stock Allocation -->
+        <div class="w-full bg-slate-800/80 h-1.5 rounded-full mt-2 overflow-hidden border border-cyan-500/20">
+          <div id="cashRatioBar" class="bg-cyan-400 h-full rounded-full transition-all duration-500 shadow-[0_0_8px_#00f0ff]" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Daily PnL (Chênh Lệch Ngày) -->
+      <div class="cyber-card p-3.5 border-amber-500/30">
+        <div class="text-slate-400 text-[11px] font-semibold tracking-wider flex items-center justify-between mb-1">
+          <span>CHÊNH LỆCH HÀNG NGÀY (DAILY PNL)</span>
+          <span class="tag-badge badge-market">PHIÊN HÔM NAY</span>
+        </div>
+        <div id="dailyPnLValue" class="text-2xl font-black text-glow-green tracking-tight">
+          +0 đ
+        </div>
+        <div id="dailyPnLPercent" class="text-xs text-slate-400 mt-1">
+          (+0.00% trong phiên)
+        </div>
+      </div>
+
+      <!-- Card 4: Realized PnL & Win Rate -->
+      <div class="cyber-card p-3.5 border-slate-700">
+        <div class="text-slate-400 text-[11px] font-semibold tracking-wider flex items-center justify-between mb-1">
+          <span>LÃI ĐÃ CHỐT & TỶ LỆ THẮNG</span>
+          <span class="tag-badge badge-sys">AUDIT</span>
+        </div>
+        <div class="flex items-baseline justify-between mt-0.5">
+          <div id="realizedPnLValue" class="text-xl font-bold text-emerald-400">
+            0 đ
+          </div>
+          <div id="winRateValue" class="text-xs font-mono text-cyan-400 font-bold">
+            0% (0/0 lệnh)
+          </div>
+        </div>
+        <div class="flex items-center justify-between text-[11px] font-mono mt-1 pt-1 border-t border-slate-800 text-slate-400">
+          <span>MAX DD: <b id="mddValue" class="text-rose-400">0.0%</b></span>
+          <span>PROFIT FACTOR: <b id="profitFactorValue" class="text-cyan-400">1.0x</b></span>
+        </div>
+        <div class="text-[10px] text-slate-500 mt-1">
+          Cắt lỗ -7% / Chốt lời +15% / Trailing Stop
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD FOUR-QUADRANT GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
+
+      <!-- LEFT COLUMN: Real-time Watchlist & Quotes (5 Cols) -->
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <div class="cyber-card p-3 flex-1 flex flex-col">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-glow-cyan">BẢNG GIÁ REAL-TIME VN30</span>
+              <span class="tag-badge badge-trade">HOSE DATA</span>
+            </div>
+            <span class="text-[10px] text-slate-400">Click mã để xem biểu đồ</span>
+          </div>
+
+          <div class="overflow-x-auto overflow-y-auto max-h-[380px]">
+            <table class="cyber-table">
+              <thead>
+                <tr>
+                  <th>MÃ</th>
+                  <th>GIÁ HIỆN TẠI</th>
+                  <th>TĂNG/GIẢM</th>
+                  <th>QUANT SCORE</th>
+                  <th>RSI(14)</th>
+                  <th>VOL SURGE</th>
+                  <th>TÍN HIỆU</th>
+                  <th>LỆNH</th>
+                </tr>
+              </thead>
+              <tbody id="watchlistTableBody">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sector Heatmap Card (Bản Đồ Nhiệt Dòng Tiền) -->
+        <div class="cyber-card p-3">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-glow-cyan">BẢN ĐỒ NHIỆT SÓNG NGÀNH</span>
+              <span class="tag-badge badge-trade text-[9px]">CASH FLOW</span>
+            </div>
+            <span class="text-[10px] text-slate-400">Dòng tiền tổ chức VN30</span>
+          </div>
+          <div id="sectorHeatmapGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <!-- Dynamically loaded -->
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Interactive Chart & Terminal Matrix Console (7 Cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-3">
+
+        <!-- Interactive TradingView Candlestick Chart with Buy/Sell Points -->
+        <div class="cyber-card p-3">
+          <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-2 mb-2 gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="chartTitle" class="text-xs font-bold text-glow-green">BIỂU ĐỒ NẾN KỸ THUẬT: FPT</span>
+                <span class="tag-badge badge-trade text-[9px]">TRADINGVIEW CORE</span>
+              </div>
+              <div id="chartSubtitle" class="text-[10px] text-slate-400 mt-0.5">Đang tải dữ liệu nến & tín hiệu...</div>
+            </div>
+
+            <!-- Ticker Quick Selectors -->
+            <div class="flex items-center gap-1.5 text-[10px]">
+              <span class="text-slate-500 hidden sm:inline font-mono">CHỌN MÃ:</span>
+              <select id="quickSymbolSelect" class="bg-slate-900 border border-cyan-500/40 rounded px-2 py-0.5 text-cyan-400 font-bold font-mono focus:outline-none focus:border-cyan-300 cursor-pointer" onchange="window.selectSymbol(this.value)">
+                <option value="FPT">FPT - FPT Corp</option>
+                <option value="HPG">HPG - Hòa Phát</option>
+                <option value="VNM">VNM - Vinamilk</option>
+                <option value="SSI">SSI - Chứng khoán SSI</option>
+                <option value="MWG">MWG - Thế Giới Di Động</option>
+                <option value="TCB">TCB - Techcombank</option>
+                <option value="MBB">MBB - Quân Đội MBBank</option>
+                <option value="ACB">ACB - Á Châu</option>
+                <option value="CTG">CTG - VietinBank</option>
+                <option value="VPB">VPB - VPBank</option>
+                <option value="TPB">TPB - TPBank</option>
+                <option value="BID">BID - BIDV</option>
+                <option value="VIC">VIC - Vingroup</option>
+                <option value="VHM">VHM - Vinhomes</option>
+                <option value="STB">STB - Sacombank</option>
+                <option value="DGC">DGC - Hóa chất Đức Giang</option>
+                <option value="VND">VND - VNDIRECT</option>
+                <option value="VCI">VCI - Vietcap</option>
+                <option value="MSN">MSN - Masan Group</option>
+                <option value="PNJ">PNJ - Vàng bạc Phú Nhuận</option>
+                <option value="GAS">GAS - PV Gas</option>
+                <option value="POW">POW - Điện lực Dầu khí</option>
+                <option value="VRE">VRE - Vincom Retail</option>
+                <option value="KDH">KDH - Nhà Khang Điền</option>
+                <option value="PLX">PLX - Petrolimex</option>
+              </select>
+              <button class="px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hidden md:inline font-mono" onclick="window.selectSymbol('FPT')">FPT</button>
+              <button class="px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hidden md:inline font-mono" onclick="window.selectSymbol('HPG')">HPG</button>
+              <button class="px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hidden md:inline font-mono" onclick="window.selectSymbol('TCB')">TCB</button>
+              <button class="px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 hover:bg-cyan-950/50 hidden md:inline font-mono" onclick="window.selectSymbol('SSI')">SSI</button>
+            </div>
+          </div>
+
+          <!-- Markers Legend & Floating OHLC Readout -->
+          <div class="flex flex-wrap items-center justify-between text-[10px] bg-slate-950/70 px-2 py-1.5 rounded mb-2 border border-slate-800">
+            <div id="chartOhlcReadout" class="font-mono text-slate-300">
+              <span class="text-slate-500">ĐƯA CHUỘT VÀO NẾN ĐỂ XEM CHI TIẾT</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="flex items-center gap-1 font-bold text-emerald-400"><span class="text-xs">▲</span> ĐIỂM MUA (BUY)</span>
+              <span class="flex items-center gap-1 font-bold text-rose-400"><span class="text-xs">▼</span> ĐIỂM BÁN (SELL)</span>
+              <span class="flex items-center gap-1 text-cyan-400"><span class="w-2.5 h-0.5 bg-cyan-400 inline-block"></span> MA20</span>
+              <span class="flex items-center gap-1 text-amber-400"><span class="w-2.5 h-0.5 bg-amber-400 inline-block"></span> MA50</span>
+            </div>
+          </div>
+
+          <!-- Chart Visual Container -->
+          <div id="tvChartContainer" class="relative w-full h-[320px] rounded overflow-hidden bg-slate-950/80">
+            <!-- Fallback canvas if WebGL or library blocked -->
+            <canvas id="stockChartCanvas" class="w-full h-full block hidden"></canvas>
+          </div>
+        </div>
+
+        <!-- Live Hacker Terminal Stream Console -->
+        <div class="cyber-card p-3 flex-1 flex flex-col">
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-glow-green">HACKER TERMINAL LOG</span>
+              <span class="text-[10px] text-slate-400">// REALTIME STREAMING FEED</span>
+            </div>
+            <!-- Log Filters -->
+            <div class="flex items-center gap-1 text-[10px]">
+              <button class="log-filter-btn px-2 py-0.5 rounded border border-cyan-500/40 text-cyan-300 active" data-filter="ALL">TẤT CẢ</button>
+              <button class="log-filter-btn px-2 py-0.5 rounded border border-slate-700 text-slate-400" data-filter="AI_BRAIN">AI BRAIN</button>
+              <button class="log-filter-btn px-2 py-0.5 rounded border border-slate-700 text-slate-400" data-filter="TRADE">LỆNH MUA/BÁN</button>
+              <button class="log-filter-btn px-2 py-0.5 rounded border border-slate-700 text-slate-400" data-filter="RISK">QUẢN TRỊ RỦI RO</button>
+            </div>
+          </div>
+
+          <!-- Terminal Output Screen -->
+          <div id="terminalOutput" class="terminal-window">
+            <!-- Streaming log lines -->
+          </div>
+
+          <!-- Interactive Command Prompt -->
+          <div class="mt-2 flex items-center gap-2 bg-black/80 border border-emerald-500/40 px-2 py-1.5 rounded">
+            <span class="text-xs text-glow-green font-bold">quant-bot:~$</span>
+            <input id="terminalInput" type="text" placeholder="Gõ lệnh (help, scan, buy FPT 50, sell HPG 50, clear)..." class="bg-transparent border-none text-xs text-slate-100 font-mono w-full focus:outline-none placeholder:text-slate-600">
+            <span class="text-[10px] text-slate-500 uppercase">ENTER</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI BRAIN & NEWS INSIGHTS -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-4">
+      
+      <!-- Gemini Neural Brain Summary (6 Cols) -->
+      <div class="lg:col-span-6 cyber-card p-3.5 border-cyan-500/30">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-glow-cyan">BỘ NÃO TRÍ TUỆ NHÂN TẠO GEMINI</span>
+            <span id="aiSentimentBadge" class="tag-badge badge-trade">XU HƯỚNG: BULLISH</span>
+          </div>
+          <span id="aiEngineBadge" class="text-[10px] text-slate-400 font-mono">CORE: GOOGLE GEMINI</span>
+        </div>
+        <div id="aiSummaryText" class="text-xs text-slate-200 leading-relaxed bg-slate-900/50 p-3 rounded border border-slate-800 font-mono min-h-[90px]">
+          Đang kết nối tới mô hình Gemini và phân tích ma trận dữ liệu...
+        </div>
+        <div class="mt-2 text-[10px] text-slate-500 flex items-center justify-between">
+          <span>Chiến lược: Kết hợp tin tức CafeF + Phân tích kỹ thuật đa khung thời gian</span>
+          <span class="text-cyan-400">Bảo toàn vốn 10.000.000 đ</span>
+        </div>
+      </div>
+
+      <!-- Live CafeF News Feed (6 Cols) -->
+      <div class="lg:col-span-6 cyber-card p-3.5 border-emerald-500/30">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-glow-green">TIN TỨC TÀI CHÍNH MỚI NHẤT (CAFEF RSS)</span>
+            <span class="tag-badge badge-trade">TỰ ĐỘNG BÓC TÁCH MÃ</span>
+          </div>
+          <span class="text-[10px] text-slate-400">Cập nhật liên tục</span>
+        </div>
+        <div id="newsList" class="flex flex-col gap-2 max-h-[140px] overflow-y-auto pr-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- SECONDARY TABS: HOLDINGS / TRADE LEDGER / DAILY TRACKING -->
+    <div class="cyber-card p-3.5">
+      <!-- Tab Header Buttons -->
+      <div class="flex items-center gap-2 border-b border-slate-800 pb-2.5 mb-3">
+        <button class="cyber-tab-btn px-3 py-1 text-xs font-bold rounded border border-green-400 text-green-300 bg-green-950/30 active" data-tab="holdings">
+          DANH MỤC ĐANG NẮM GIỮ (ACTIVE HOLDINGS)
+        </button>
+        <button class="cyber-tab-btn px-3 py-1 text-xs font-bold rounded border border-slate-700 text-slate-400" data-tab="trades">
+          SỔ LỆNH & LỊCH SỬ GIAO DỊCH (AUDIT LEDGER)
+        </button>
+        <button class="cyber-tab-btn px-3 py-1 text-xs font-bold rounded border border-slate-700 text-slate-400" data-tab="daily">
+          THEO DÕI VỐN & CHÊNH LỆCH HÀNG NGÀY (DAILY PNL HISTORY)
+        </button>
+        <button class="cyber-tab-btn px-3 py-1 text-xs font-bold rounded border border-slate-700 text-slate-400" data-tab="equity">
+          📈 ĐƯỜNG CONG VỐN NAV (EQUITY CURVE)
+        </button>
+      </div>
+
+      <!-- Tab Content 1: Holdings -->
+      <div id="tabContentHoldings" class="overflow-x-auto">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>MÃ CP</th>
+              <th>TỔNG SL</th>
+              <th>KHẢ DỤNG (T+2.5)</th>
+              <th>CHỜ VỀ</th>
+              <th>GIÁ VỐN</th>
+              <th>GIÁ THỊ TRƯỜNG</th>
+              <th>LÃI / LỖ TẠM TÍNH</th>
+              <th>HÀNH ĐỘNG</th>
+            </tr>
+          </thead>
+          <tbody id="holdingsTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab Content 2: Trades Ledger with AI Reason -->
+      <div id="tabContentTrades" class="overflow-x-auto hidden">
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>THỜI GIAN</th>
+              <th>LỆNH</th>
+              <th>MÃ CP</th>
+              <th>SỐ LƯỢNG</th>
+              <th>GIÁ KHỚP</th>
+              <th>LÃI/LỖ ĐÃ CHỐT</th>
+              <th>LÝ DO AI PHÂN TÍCH RA QUYẾT ĐỊNH (RATIONALE)</th>
+            </tr>
+          </thead>
+          <tbody id="tradesTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab Content 3: Daily Capital Snapshots -->
+      <div id="tabContentDaily" class="overflow-x-auto hidden">
+        <div class="mb-2 text-xs text-slate-400 italic">
+          Bảng theo dõi biến động số vốn 10.000.000 VNĐ ban đầu qua từng ngày giao dịch (So sánh chênh lệch NAV mở phiên vs đóng phiên):
+        </div>
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>NGÀY GIAO DỊCH</th>
+              <th>TỔNG GIÁ TRỊ TÀI SẢN (NAV)</th>
+              <th>TIỀN MẶT CÒN LẠI</th>
+              <th>CHÊNH LỆCH TRONG NGÀY (VND)</th>
+              <th>TỶ LỆ BIẾN ĐỘNG (%)</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab Content 4: Equity Curve Chart -->
+      <div id="tabContentEquity" class="hidden">
+        <div class="flex flex-wrap items-center justify-between text-xs mb-3 bg-slate-950/80 p-2.5 rounded border border-slate-800">
+          <div>
+            <span class="text-glow-green font-bold">HÀNH TRÌNH TĂNG TRƯỞNG TỔNG TÀI SẢN (NAV) TỪ 10.000.000 Đ</span>
+            <div class="text-[10px] text-slate-400">Đường cong vốn theo thời gian & tỷ lệ sụt giảm Max Drawdown</div>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <span>ĐỈNH NAV: <b id="equityPeakNav" class="text-emerald-400">10,000,000 đ</b></span>
+            <span>MAX DRAWDOWN: <b id="equityMdd" class="text-rose-400">0.0%</b></span>
+            <span>PROFIT FACTOR: <b id="equityPf" class="text-cyan-400">1.0x</b></span>
+          </div>
+        </div>
+        <div class="relative w-full h-[280px] bg-slate-950/90 rounded border border-slate-800 p-2 overflow-hidden">
+          <canvas id="equityCurveCanvas" class="w-full h-full block"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER SYSTEM INFO & 24/7 FREE HOSTING BLUEPRINT -->
+    <footer class="mt-4 text-center text-xs text-slate-500 font-mono flex flex-wrap items-center justify-between gap-2 border-t border-slate-900 pt-3">
+      <div>
+        <span>ANTIGRAVITY CYBER QUANT v2.5</span> • <span>Initial Capital: 10,000,000 VND</span>
+      </div>
+      <div>
+        <span>24/7 Background Autonomous Worker Active</span> • <span>Health Check: <code class="text-cyan-400">/health</code></span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL: SETTINGS & GEMINI API KEY -->
+  <div id="settingsModal" class="modal-overlay hidden">
+    <div class="cyber-card p-5 max-w-md w-full border-cyan-500/60 shadow-[0_0_25px_rgba(0,240,255,0.2)]">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-4">
+        <h3 class="text-sm font-bold text-glow-cyan">CẤU HÌNH HỆ THỐNG & GEMINI API</h3>
+        <button id="closeSettingsBtn" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">GOOGLE GEMINI API KEY</label>
+          <input id="apiKeyInput" type="password" placeholder="Nhập khóa API (AIzaSy...)" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
+          <span class="text-[10px] text-slate-500 mt-1 block">Khóa API được lưu an toàn tại backend để bot tự chạy nền 24/7.</span>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">MÔ HÌNH GEMINI</label>
+          <select id="modelSelect" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
+            <option value="gemini-flash-lite-latest" selected>Gemini Flash Lite (Khuyên dùng: 1,500 lượt/ngày Free, siêu tốc)</option>
+            <option value="gemini-flash-latest">Gemini Flash Standard (1,500 lượt/ngày Free, ổn định)</option>
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Bản thử nghiệm, giới hạn 20 lượt/ngày)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">KHẨU VỊ RỦI RO (RISK TOLERANCE)</label>
+          <select id="riskSelect" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
+            <option value="CONSERVATIVE">Thận trọng (Chỉ mua mã VN30 khi RSI < 35 & có tin tích cực)</option>
+            <option value="BALANCED" selected>Cân bằng (Đa dạng hóa danh mục, tối đa 35% vốn / mã)</option>
+            <option value="AGGRESSIVE">Tấn công (Giải ngân nhanh khi bắt đầu có sóng tăng MA20)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">TẦN SUẤT QUÉT THỊ TRƯỜNG TỰ HÀNH (GIÂY)</label>
+          <input id="intervalInput" type="number" min="30" max="600" value="120" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono">
+        </div>
+
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-800">
+          <input id="autoTradeSwitch" type="checkbox" checked class="w-4 h-4 accent-emerald-500">
+          <label for="autoTradeSwitch" class="text-slate-200 font-semibold">Tự động đặt lệnh mua bán (Auto-Trading Engine)</label>
+        </div>
+
+        <!-- TELEGRAM BOT ALERT CONFIGURATION -->
+        <div class="pt-2 border-t border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-slate-300 font-semibold text-glow-cyan">THÔNG BÁO TELEGRAM VỀ ĐIỆN THOẠI</label>
+            <div class="flex items-center gap-1.5">
+              <input id="telegramAlertsSwitch" type="checkbox" checked class="w-4 h-4 accent-cyan-500">
+              <span class="text-[10px] text-slate-400">Bật thông báo</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-400 text-[10px] mb-0.5">TELEGRAM BOT TOKEN</label>
+            <input id="telegramTokenInput" type="password" placeholder="Nhập bot token từ @BotFather..." class="w-full bg-slate-950 border border-slate-700 px-3 py-1.5 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-slate-400 text-[10px] mb-0.5">TELEGRAM CHAT ID</label>
+            <input id="telegramChatIdInput" type="text" placeholder="Nhập Chat ID của bạn (vd: 123456789)..." class="w-full bg-slate-950 border border-slate-700 px-3 py-1.5 rounded text-slate-200 focus:outline-none focus:border-cyan-400 font-mono text-xs">
+          </div>
+          <div class="flex justify-between items-center pt-1">
+            <span class="text-[10px] text-slate-500">Nhận báo Mua/Bán & Cắt lỗ tức thì</span>
+            <button id="testTelegramBtn" type="button" class="cyber-btn cyber-btn-cyan text-[10px] py-1 px-2.5">
+              🔔 TEST GỬI THỬ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2 border-t border-slate-800 pt-3">
+        <button id="saveSettingsBtn" class="cyber-btn cyber-btn-cyan text-xs">
+          LƯU CẤU HÌNH
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STRATEGY BACKTESTER -->
+  <div id="backtestModal" class="modal-overlay hidden">
+    <div class="cyber-card p-5 max-w-2xl w-full border-cyan-500/60 shadow-[0_0_25px_rgba(0,240,255,0.25)] max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-glow-cyan">KIỂM THỬ CHIẾN LƯỢC QUÁ KHỨ (STRATEGY BACKTESTER)</span>
+          <span class="tag-badge badge-trade text-[9px]">HISTORICAL SIMULATION</span>
+        </div>
+        <button id="closeBacktestBtn" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <!-- Backtest Controls -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">KHOẢNG THỜI GIAN</label>
+          <select id="backtestDaysSelect" class="w-full bg-slate-950 border border-slate-700 px-3 py-1.5 rounded text-slate-200 font-mono">
+            <option value="30">30 Ngày gần nhất</option>
+            <option value="60">60 Ngày gần nhất</option>
+            <option value="90" selected>90 Ngày gần nhất (Khuyên dùng)</option>
+            <option value="180">180 Ngày (6 Tháng)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">SỐ VỐN BAN ĐẦU</label>
+          <input id="backtestCapitalInput" type="number" value="10000000" class="w-full bg-slate-950 border border-slate-700 px-3 py-1.5 rounded text-slate-200 font-mono">
+        </div>
+        <div class="flex items-end">
+          <button id="runBacktestBtn" class="cyber-btn w-full text-xs py-2 font-bold">
+            ⚡ CHẠY BACKTEST NGAY
+          </button>
+        </div>
+      </div>
+
+      <!-- Backtest Results HUD -->
+      <div id="backtestResultsHUD" class="hidden mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+          <div class="bg-slate-950/80 p-2.5 rounded border border-slate-800">
+            <div class="text-[10px] text-slate-400">TỔNG LỢI NHUẬN</div>
+            <div id="btReturnVal" class="text-lg font-bold text-emerald-400">+0%</div>
+            <div id="btFinalNav" class="text-[10px] text-slate-400">10,000,000 đ</div>
+          </div>
+          <div class="bg-slate-950/80 p-2.5 rounded border border-slate-800">
+            <div class="text-[10px] text-slate-400">TỶ LỆ THẮNG (WIN RATE)</div>
+            <div id="btWinRate" class="text-lg font-bold text-cyan-400">0%</div>
+            <div id="btTradeStats" class="text-[10px] text-slate-400">0/0 lệnh thắng</div>
+          </div>
+          <div class="bg-slate-950/80 p-2.5 rounded border border-slate-800">
+            <div class="text-[10px] text-slate-400">MAX DRAWDOWN (MDD)</div>
+            <div id="btMdd" class="text-lg font-bold text-rose-400">0%</div>
+            <div class="text-[10px] text-slate-500">Mức sụt giảm tối đa</div>
+          </div>
+          <div class="bg-slate-950/80 p-2.5 rounded border border-slate-800">
+            <div class="text-[10px] text-slate-400">PROFIT FACTOR</div>
+            <div id="btPf" class="text-lg font-bold text-amber-400">1.0x</div>
+            <div class="text-[10px] text-slate-500">Tỷ lệ Lãi / Lỗ gộp</div>
+          </div>
+        </div>
+
+        <!-- Backtest Trades Table -->
+        <div class="overflow-x-auto max-h-[220px]">
+          <table class="cyber-table text-[11px]">
+            <thead>
+              <tr>
+                <th>NGÀY</th>
+                <th>MÃ</th>
+                <th>LỆNH</th>
+                <th>SỐ LƯỢNG</th>
+                <th>GIÁ</th>
+                <th>LÃI/LỖ</th>
+                <th>LÝ DO ĐỊNH LƯỢNG</th>
+              </tr>
+            </thead>
+            <tbody id="backtestTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANUAL TRADE OVERRIDE -->
+  <div id="manualTradeModal" class="modal-overlay hidden">
+    <div class="cyber-card p-5 max-w-sm w-full border-emerald-500/60 shadow-[0_0_25px_rgba(0,255,102,0.2)]">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-4">
+        <h3 class="text-sm font-bold text-glow-green">CAN THIỆP ĐẶT LỆNH THỦ CÔNG</h3>
+        <button id="closeManualTradeBtn" class="text-slate-400 hover:text-white text-base">✕</button>
+      </div>
+
+      <form id="manualTradeForm" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">MÃ CHỨNG KHOÁN</label>
+          <input id="manualSymbol" type="text" readonly class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-cyan-400 font-bold font-mono">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">CHIỀU LỆNH</label>
+          <select id="manualSide" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 font-mono">
+            <option value="BUY">MUA (BUY)</option>
+            <option value="SELL">BÁN (SELL)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">SỐ LƯỢNG CỔ PHIẾU (LÔ 10 / 100)</label>
+          <input id="manualQuantity" type="number" step="10" min="10" value="50" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 font-mono">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">GIÁ ĐẶT (VND)</label>
+          <input id="manualPrice" type="number" class="w-full bg-slate-950 border border-slate-700 px-3 py-2 rounded text-slate-200 font-mono">
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2 border-t border-slate-800">
+          <button type="submit" class="cyber-btn text-xs w-full justify-center">
+            XÁC NHẬN ĐẶT LỆNH
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/matrix.js"></script>
+  <script src="/audio.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

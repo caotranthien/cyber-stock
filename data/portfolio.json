@@ -1,0 +1,388 @@
+{
+  "initialCapital": 10000000,
+  "cash": 3856,
+  "totalNav": 9993656,
+  "startOfDayNav": 10000000,
+  "unrealizedPnL": 29197,
+  "unrealizedPnLPercent": 0.29,
+  "realizedPnL": -12534,
+  "dailyPnL": -6344,
+  "dailyPnLPercent": -0.06,
+  "lastDate": "2026-10-21",
+  "holdings": {
+    "FPT": {
+      "symbol": "FPT",
+      "quantity": 50,
+      "availableQuantity": 50,
+      "pendingQuantity": 0,
+      "avgPrice": 57900,
+      "highestPrice": 58200,
+      "currentPrice": 57900,
+      "costValue": 2895000,
+      "marketValue": 2895000,
+      "pnl": 0,
+      "pnlPercent": 0,
+      "entryTime": "2026-10-21T03:02:07.381Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792551727381,
+          "quantity": 50,
+          "price": 57900
+        }
+      ]
+    },
+    "VIC": {
+      "symbol": "VIC",
+      "quantity": 10,
+      "availableQuantity": 10,
+      "pendingQuantity": 0,
+      "avgPrice": 210400,
+      "highestPrice": 214000,
+      "currentPrice": 213600,
+      "costValue": 2104000,
+      "marketValue": 2136000,
+      "pnl": 32000,
+      "pnlPercent": 1.52,
+      "entryTime": "2026-10-21T03:02:07.388Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792551727388,
+          "quantity": 10,
+          "price": 210400
+        }
+      ]
+    },
+    "ACB": {
+      "symbol": "ACB",
+      "quantity": 7,
+      "availableQuantity": 7,
+      "pendingQuantity": 0,
+      "avgPrice": 20400,
+      "highestPrice": 20450,
+      "currentPrice": 20400,
+      "costValue": 142800,
+      "marketValue": 142800,
+      "pnl": 0,
+      "pnlPercent": 0,
+      "entryTime": "2026-10-21T03:02:07.393Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792551727393,
+          "quantity": 7,
+          "price": 20400
+        }
+      ]
+    },
+    "TCB": {
+      "symbol": "TCB",
+      "quantity": 102,
+      "availableQuantity": 101,
+      "pendingQuantity": 1,
+      "avgPrice": 34200,
+      "highestPrice": 34200,
+      "currentPrice": 34200,
+      "costValue": 3488400,
+      "marketValue": 3488400,
+      "pnl": 0,
+      "pnlPercent": 0,
+      "entryTime": "2026-10-21T03:08:28.602Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792552108602,
+          "quantity": 100,
+          "price": 34200
+        },
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792552419216,
+          "quantity": 1,
+          "price": 34200
+        },
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792553175239,
+          "quantity": 1,
+          "price": 34150
+        }
+      ]
+    },
+    "MWG": {
+      "symbol": "MWG",
+      "quantity": 17,
+      "availableQuantity": 10,
+      "pendingQuantity": 7,
+      "avgPrice": 75459,
+      "highestPrice": 75600,
+      "currentPrice": 75300,
+      "costValue": 1282803,
+      "marketValue": 1280100,
+      "pnl": -2703,
+      "pnlPercent": -0.21,
+      "entryTime": "2026-10-21T03:08:28.603Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792552108603,
+          "quantity": 10,
+          "price": 75500
+        },
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792553264868,
+          "quantity": 7,
+          "price": 75400
+        }
+      ]
+    },
+    "VPB": {
+      "symbol": "VPB",
+      "quantity": 2,
+      "availableQuantity": 0,
+      "pendingQuantity": 2,
+      "avgPrice": 23800,
+      "highestPrice": 23800,
+      "currentPrice": 23750,
+      "costValue": 47600,
+      "marketValue": 47500,
+      "pnl": -100,
+      "pnlPercent": -0.21,
+      "entryTime": "2026-10-21T03:27:44.877Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792553264877,
+          "quantity": 2,
+          "price": 23800
+        }
+      ]
+    }
+  },
+  "trades": [
+    {
+      "id": "TRD_MVHJXJAL",
+      "timestamp": "2026-10-21T03:27:44.877Z",
+      "timeFormatted": "10:27:44",
+      "symbol": "VPB",
+      "side": "BUY",
+      "quantity": 2,
+      "price": 23800,
+      "orderValue": 47600,
+      "fee": 71,
+      "tax": 0,
+      "total": 47671,
+      "aiReason": "[AI GEMINI: 70%] Quant score đạt 70, thuộc nhóm sóng tăng và tích lũy tích cực."
+    },
+    {
+      "id": "TRD_MVHJXJAC",
+      "timestamp": "2026-10-21T03:27:44.868Z",
+      "timeFormatted": "10:27:44",
+      "symbol": "MWG",
+      "side": "BUY",
+      "quantity": 7,
+      "price": 75400,
+      "orderValue": 527800,
+      "fee": 792,
+      "tax": 0,
+      "total": 528592,
+      "aiReason": "[AI GEMINI: 70%] Quant score cao 70, xu hướng sóng tăng và tích lũy ổn định."
+    },
+    {
+      "id": "TRD_MVHJVM4N",
+      "timestamp": "2026-10-21T03:26:15.239Z",
+      "timeFormatted": "10:26:15",
+      "symbol": "TCB",
+      "side": "BUY",
+      "quantity": 1,
+      "price": 34150,
+      "orderValue": 34150,
+      "fee": 51,
+      "tax": 0,
+      "total": 34201,
+      "aiReason": "[AI GEMINI: 75%] Dòng tiền đột biến vượt trội volSurge 1.65x cùng quant score cao 65/100, xu hướng tăng tích cực."
+    },
+    {
+      "id": "TRD_MVHJUOO3",
+      "timestamp": "2026-10-21T03:25:31.875Z",
+      "timeFormatted": "10:25:31",
+      "symbol": "VHM",
+      "side": "SELL",
+      "quantity": 10,
+      "price": 59500,
+      "orderValue": 595000,
+      "fee": 893,
+      "tax": 595,
+      "netProceeds": 593512,
+      "pnl": 8512,
+      "aiReason": "[AI GEMINI: 60%] RSI thấp 34.7, xu hướng sideway, chốt lời bảo vệ danh mục."
+    },
+    {
+      "id": "TRD_MVHJFES0",
+      "timestamp": "2026-10-21T03:13:39.216Z",
+      "timeFormatted": "10:13:39",
+      "symbol": "TCB",
+      "side": "BUY",
+      "quantity": 1,
+      "price": 34200,
+      "orderValue": 34200,
+      "fee": 51,
+      "tax": 0,
+      "total": 34251,
+      "aiReason": "[AI GEMINI: 75%] Dòng tiền đột biến mạnh và RSI duy trì tích cực ủng hộ xu hướng tăng."
+    },
+    {
+      "id": "TRD_MVHJ9IQ0",
+      "timestamp": "2026-10-21T03:09:04.392Z",
+      "timeFormatted": "10:09:04",
+      "symbol": "VHM",
+      "side": "BUY",
+      "quantity": 10,
+      "price": 58500,
+      "orderValue": 585000,
+      "fee": 878,
+      "tax": 0,
+      "total": 585878,
+      "aiReason": "[AI GEMINI: 80%] Đột biến dòng tiền lớn vào VHM kết hợp điểm Quant Score cao."
+    },
+    {
+      "id": "TRD_MVHJ8R3V",
+      "timestamp": "2026-10-21T03:08:28.603Z",
+      "timeFormatted": "10:08:28",
+      "symbol": "MWG",
+      "side": "BUY",
+      "quantity": 10,
+      "price": 75500,
+      "orderValue": 755000,
+      "fee": 1133,
+      "tax": 0,
+      "total": 756133,
+      "aiReason": "[AI GEMINI: 80%] MWG có Quant Score cao nhất, xu hướng tăng và tích lũy tốt."
+    },
+    {
+      "id": "TRD_MVHJ8R3U",
+      "timestamp": "2026-10-21T03:08:28.602Z",
+      "timeFormatted": "10:08:28",
+      "symbol": "TCB",
+      "side": "BUY",
+      "quantity": 100,
+      "price": 34200,
+      "orderValue": 3420000,
+      "fee": 5130,
+      "tax": 0,
+      "total": 3425130,
+      "aiReason": "[AI GEMINI: 85%] TCB có Quant Score cao, dòng tiền lớn vào và xu hướng tăng rõ nét."
+    },
+    {
+      "id": "TRD_MVHJ8R3R",
+      "timestamp": "2026-10-21T03:08:28.599Z",
+      "timeFormatted": "10:08:28",
+      "symbol": "VHM",
+      "side": "SELL",
+      "quantity": 50,
+      "price": 58500,
+      "orderValue": 2925000,
+      "fee": 4388,
+      "tax": 2925,
+      "netProceeds": 2917687,
+      "pnl": -22313,
+      "aiReason": "[AI GEMINI: 70%] Bán cắt lỗ nhẹ để tái cơ cấu danh mục, RSI quá bán và giá dưới SMA20."
+    },
+    {
+      "id": "TRD_MVHJ8R3O",
+      "timestamp": "2026-10-21T03:08:28.596Z",
+      "timeFormatted": "10:08:28",
+      "symbol": "STB",
+      "side": "SELL",
+      "quantity": 30,
+      "price": 63100,
+      "orderValue": 1893000,
+      "fee": 2840,
+      "tax": 1893,
+      "netProceeds": 1888267,
+      "pnl": 1267,
+      "aiReason": "[AI GEMINI: 75%] Bán chốt lời nhẹ để tái cơ cấu danh mục, RSI quá bán nhưng cần tiền mặt."
+    },
+    {
+      "id": "TRD_MVHJ0KYP",
+      "timestamp": "2026-10-21T03:02:07.393Z",
+      "timeFormatted": "10:02:07",
+      "symbol": "ACB",
+      "side": "BUY",
+      "quantity": 7,
+      "price": 20400,
+      "orderValue": 142800,
+      "fee": 214,
+      "tax": 0,
+      "total": 143014,
+      "aiReason": "[AI GEMINI: 74%] [QUANT SIGNAL] RSI đạt 36.8 ở vùng tích lũy tốt. MA20(20722.5) hỗ trợ vững chắc."
+    },
+    {
+      "id": "TRD_MVHJ0KYO",
+      "timestamp": "2026-10-21T03:02:07.392Z",
+      "timeFormatted": "10:02:07",
+      "symbol": "STB",
+      "side": "BUY",
+      "quantity": 30,
+      "price": 62900,
+      "orderValue": 1887000,
+      "fee": 2831,
+      "tax": 0,
+      "total": 1889831,
+      "aiReason": "[AI GEMINI: 74%] [QUANT SIGNAL] RSI đạt 24.6 ở vùng tích lũy tốt. MA20(68295) hỗ trợ vững chắc."
+    },
+    {
+      "id": "TRD_MVHJ0KYN",
+      "timestamp": "2026-10-21T03:02:07.391Z",
+      "timeFormatted": "10:02:07",
+      "symbol": "VHM",
+      "side": "BUY",
+      "quantity": 50,
+      "price": 58800,
+      "orderValue": 2940000,
+      "fee": 4410,
+      "tax": 0,
+      "total": 2944410,
+      "aiReason": "[AI GEMINI: 74%] [QUANT SIGNAL] RSI đạt 32.3 ở vùng tích lũy tốt. MA20(65085) hỗ trợ vững chắc."
+    },
+    {
+      "id": "TRD_MVHJ0KYK",
+      "timestamp": "2026-10-21T03:02:07.388Z",
+      "timeFormatted": "10:02:07",
+      "symbol": "VIC",
+      "side": "BUY",
+      "quantity": 10,
+      "price": 210400,
+      "orderValue": 2104000,
+      "fee": 3156,
+      "tax": 0,
+      "total": 2107156,
+      "aiReason": "[AI GEMINI: 74%] [QUANT SIGNAL] RSI đạt 35.9 ở vùng tích lũy tốt. MA20(223105) hỗ trợ vững chắc."
+    },
+    {
+      "id": "TRD_MVHJ0KYD",
+      "timestamp": "2026-10-21T03:02:07.381Z",
+      "timeFormatted": "10:02:07",
+      "symbol": "FPT",
+      "side": "BUY",
+      "quantity": 50,
+      "price": 57900,
+      "orderValue": 2895000,
+      "fee": 4343,
+      "tax": 0,
+      "total": 2899343,
+      "aiReason": "[AI GEMINI: 88%] [QUANT SIGNAL] RSI đạt 36.6 ở vùng tích lũy tốt, kết hợp tin tức tích cực từ CafeF. MA20(60170) hỗ trợ vững chắc."
+    }
+  ],
+  "dailySnapshots": [
+    {
+      "date": "2026-10-21",
+      "nav": 9993656,
+      "cash": 3856,
+      "pnl": -6344,
+      "changePercent": -0.06
+    }
+  ]
+}

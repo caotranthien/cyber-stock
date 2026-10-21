@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules/
+package-lock.json
+
+# Environment variables & Sensitive keys (BẢO VỆ API KEY & TELEGRAM TOKEN)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Bot config & persistent state with sensitive tokens
+data/config.json
+
+# Logs & temp files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System files
+.DS_Store
+Thumbs.db
