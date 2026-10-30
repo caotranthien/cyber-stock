@@ -234,6 +234,54 @@ class TradingEngine {
     return this.getSummary();
   }
 
+  // Recalculate portfolio valuation immediately after trades
+  recalculateValuation() {
+    let holdingsMarketValue = 0;
+    let holdingsCostValue = 0;
+
+    for (const [symbol, holding] of Object.entries(this.portfolio.holdings)) {
+      if (holding.quantity <= 0) {
+        delete this.portfolio.holdings[symbol];
+        continue;
+      }
+      const curPrice = holding.currentPrice || holding.avgPrice;
+      holding.costValue = holding.quantity * holding.avgPrice;
+      holding.marketValue = holding.quantity * curPrice;
+      holding.pnl = holding.marketValue - holding.costValue;
+      holding.pnlPercent = holding.costValue > 0 ? Math.round((holding.pnl / holding.costValue) * 10000) / 100 : 0;
+
+      holdingsMarketValue += holding.marketValue;
+      holdingsCostValue += holding.costValue;
+    }
+
+    this.portfolio.unrealizedPnL = holdingsMarketValue - holdingsCostValue;
+    this.portfolio.unrealizedPnLPercent = holdingsCostValue > 0 ? Math.round((this.portfolio.unrealizedPnL / holdingsCostValue) * 10000) / 100 : 0;
+    this.portfolio.totalNav = this.portfolio.cash + holdingsMarketValue;
+    this.portfolio.dailyPnL = this.portfolio.totalNav - this.portfolio.startOfDayNav;
+    this.portfolio.dailyPnLPercent = this.portfolio.startOfDayNav > 0
+      ? Math.round((this.portfolio.dailyPnL / this.portfolio.startOfDayNav) * 10000) / 100
+      : 0;
+
+    const today = this.getTodayString();
+    if (!this.portfolio.dailySnapshots) this.portfolio.dailySnapshots = [];
+    const todayIdx = this.portfolio.dailySnapshots.findIndex(s => s.date === today);
+    const snapshotObj = {
+      date: today,
+      nav: this.portfolio.totalNav,
+      cash: this.portfolio.cash,
+      pnl: this.portfolio.dailyPnL,
+      changePercent: this.portfolio.dailyPnLPercent
+    };
+    if (todayIdx >= 0) {
+      this.portfolio.dailySnapshots[todayIdx] = snapshotObj;
+    } else {
+      this.portfolio.dailySnapshots.push(snapshotObj);
+    }
+
+    this.savePortfolio();
+    return this.getSummary();
+  }
+
   // Execute BUY order
   executeBuy(symbol, price, requestedShares, aiReason = 'Tín hiệu AI phân tích tự động') {
     if (price <= 0) return { success: false, message: 'Giá không hợp lệ' };
@@ -318,12 +366,12 @@ class TradingEngine {
     };
 
     this.portfolio.trades.unshift(tradeRecord);
-    this.savePortfolio();
+    this.recalculateValuation();
 
     logger.success('TRADE', `[KHỚP LỆNH MUA] ${symbol}: ${allowedShares} CP @ ${price.toLocaleString('vi-VN')} đ | Trị giá: ${orderValue.toLocaleString('vi-VN')} đ | Phí: ${fee.toLocaleString('vi-VN')} đ (Đang chờ về T+2.5)`, tradeRecord);
     telegramBot.sendTradeAlert(tradeRecord).catch(() => {});
 
-    return { success: true, trade: tradeRecord };
+    return { success: true, trade: tradeRecord, portfolio: this.getSummary() };
   }
 
   // Execute SELL order
@@ -408,13 +456,13 @@ class TradingEngine {
     };
 
     this.portfolio.trades.unshift(tradeRecord);
-    this.savePortfolio();
+    this.recalculateValuation();
 
     const pnlPrefix = tradePnL >= 0 ? '+' : '';
-    logger.success('TRADE', `[KHỚP LỆNH BÁN] ${symbol}: ${sellQty} CP @ ${price.toLocaleString('vi-VN')} đ | Lãi/Lỗ: ${pnlPrefix}${tradePnL.toLocaleString('vi-VN')} đ | Rationale: ${aiReason}`, tradeRecord);
+    logger.success('TRADE', `[KHỚP LỆNH BÁN] ${symbol}: ${sellQty} CP @ ${price.toLocaleString('vi-VN')} đ | Lãi/Lỗ: ${pnlPrefix}${tradePnL.toLocaleString('vi-VN')} đ | Thu về tiền mặt: +${netProceeds.toLocaleString('vi-VN')} đ | Rationale: ${aiReason}`, tradeRecord);
     telegramBot.sendTradeAlert(tradeRecord).catch(() => {});
 
-    return { success: true, trade: tradeRecord };
+    return { success: true, trade: tradeRecord, portfolio: this.getSummary() };
   }
 
   // Risk Auto-Guardian: Stop-loss at -7% and Take-Profit at +15%

@@ -228,7 +228,27 @@ app.post('/api/trade/manual', async (req, res) => {
   }
 
   if (result.success) {
-    res.json(result);
+    const summary = result.portfolio || tradingEngine.getSummary();
+    try {
+      const quotes = await marketData.getMarketSnapshot();
+      logger.broadcast({
+        type: 'state_update',
+        portfolio: summary,
+        quotes: quotes,
+        botStatus: {
+          isRunning: botScheduler.isRunning,
+          cycleCount: botScheduler.cycleCount,
+          lastRunTime: botScheduler.lastRunTime,
+          autoTradeEnabled: geminiBrain.config.autoTradeEnabled
+        }
+      });
+    } catch (e) {}
+
+    res.json({
+      success: true,
+      trade: result.trade,
+      portfolio: summary
+    });
   } else {
     res.status(400).json(result);
   }

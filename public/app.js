@@ -1292,6 +1292,29 @@
         if (side === 'BUY') sfx.playBuy();
         else sfx.playSell();
         closeModal(el.manualTradeModal);
+
+        if (data.portfolio) {
+          state.portfolio = data.portfolio;
+          renderHUD();
+          renderHoldings();
+          renderTrades();
+          renderEquityCurve();
+        }
+
+        const actionText = side === 'BUY' ? 'MUA' : 'BÁN';
+        const tradeInfo = data.trade;
+        const netText = side === 'SELL'
+          ? `Đã thu về: +${fmtVND(tradeInfo.netProceeds)} tiền mặt! Số dư tiền mặt khả dụng hiện tại: ${fmtVND(data.portfolio.cash)}.`
+          : `Đã thanh toán: ${fmtVND(tradeInfo.total)}. Số dư tiền mặt còn lại: ${fmtVND(data.portfolio.cash)}.`;
+
+        appendTerminalLine({
+          timeFormatted: new Date().toLocaleTimeString('vi-VN', { hour12: false }),
+          category: 'TRADE_MANUAL',
+          level: 'SUCCESS',
+          message: `[KHỚP LỆNH ${actionText}] ${symbol}: ${quantity} CP @ ${fmtVND(tradeInfo.price)}. ${netText}`
+        });
+
+        alert(`✅ Khớp lệnh ${actionText} ${quantity} CP ${symbol} thành công!\n\n${netText}`);
       }
     } catch (e) {
       alert('Lỗi gửi lệnh: ' + e.message);
