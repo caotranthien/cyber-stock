@@ -2,13 +2,13 @@
   "initialCapital": 10000000,
   "cash": 51237,
   "totalNav": 9995387,
-  "startOfDayNav": 10000000,
+  "startOfDayNav": 9995387,
   "unrealizedPnL": 31147,
   "unrealizedPnLPercent": 0.31,
-  "realizedPnL": -12753,
-  "dailyPnL": -4613,
-  "dailyPnLPercent": -0.05,
-  "lastDate": "2026-10-21",
+  "realizedPnL": -13110,
+  "dailyPnL": 0,
+  "dailyPnLPercent": 0,
+  "lastDate": "2026-10-30",
   "holdings": {
     "FPT": {
       "symbol": "FPT",
@@ -51,28 +51,6 @@
           "timestamp": 1792551727388,
           "quantity": 10,
           "price": 210400
-        }
-      ]
-    },
-    "ACB": {
-      "symbol": "ACB",
-      "quantity": 7,
-      "availableQuantity": 7,
-      "pendingQuantity": 0,
-      "avgPrice": 20400,
-      "highestPrice": 20450,
-      "currentPrice": 20350,
-      "costValue": 142800,
-      "marketValue": 142450,
-      "pnl": -350,
-      "pnlPercent": -0.25,
-      "entryTime": "2026-10-21T03:02:07.393Z",
-      "lots": [
-        {
-          "date": "2026-10-21",
-          "timestamp": 1792551727393,
-          "quantity": 7,
-          "price": 20400
         }
       ]
     },
@@ -135,6 +113,28 @@
           "timestamp": 1792553264868,
           "quantity": 7,
           "price": 75400
+        }
+      ]
+    },
+    "ACB": {
+      "symbol": "ACB",
+      "quantity": 7,
+      "availableQuantity": 7,
+      "pendingQuantity": 0,
+      "avgPrice": 20400,
+      "highestPrice": 20450,
+      "currentPrice": 20350,
+      "costValue": 142800,
+      "marketValue": 142450,
+      "pnl": -350,
+      "pnlPercent": -0.25,
+      "entryTime": "2026-10-30T02:35:35.010Z",
+      "lots": [
+        {
+          "date": "2026-10-21",
+          "timestamp": 1792551727393,
+          "quantity": 7,
+          "price": 20400
         }
       ]
     }
@@ -376,6 +376,13 @@
       "cash": 51237,
       "pnl": -4613,
       "changePercent": -0.05
+    },
+    {
+      "date": "2026-10-30",
+      "nav": 9995387,
+      "cash": 51237,
+      "pnl": 0,
+      "changePercent": 0
     }
   ]
 }
